@@ -4,6 +4,7 @@ package prompter
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -28,11 +29,15 @@ type Prompter struct {
 	NoEcho     bool
 	UseDefault bool
 	reg        *regexp.Regexp
+	Out        io.Writer
 }
 
 // Prompt displays a prompt and returns answer
 func (p *Prompter) Prompt() string {
-	fmt.Print(p.msg())
+	if p.Out == nil {
+		p.Out = os.Stdout
+	}
+	fmt.Fprint(p.Out, p.msg())
 	if p.UseDefault || skip() {
 		return p.Default
 	}
@@ -42,7 +47,7 @@ func (p *Prompter) Prompt() string {
 		if err == nil {
 			input = string(b)
 		}
-		fmt.Print("\n")
+		fmt.Fprint(p.Out, "\n")
 	} else {
 		scanner := bufio.NewScanner(os.Stdin)
 		ok := scanner.Scan()
@@ -54,7 +59,7 @@ func (p *Prompter) Prompt() string {
 		input = p.Default
 	}
 	if !p.inputIsValid(input) {
-		fmt.Println(p.errorMsg())
+		fmt.Fprintln(p.Out, p.errorMsg())
 		return p.Prompt()
 	}
 	return input
