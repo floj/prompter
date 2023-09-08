@@ -29,15 +29,15 @@ type Prompter struct {
 	NoEcho     bool
 	UseDefault bool
 	reg        *regexp.Regexp
-	Out        io.Writer
+	out        io.Writer
 }
 
 // Prompt displays a prompt and returns answer
 func (p *Prompter) Prompt() string {
-	if p.Out == nil {
-		p.Out = os.Stdout
+	if p.out == nil {
+		p.out = os.Stdout
 	}
-	fmt.Fprint(p.Out, p.msg())
+	fmt.Fprint(p.out, p.msg())
 	if p.UseDefault || skip() {
 		return p.Default
 	}
@@ -47,7 +47,7 @@ func (p *Prompter) Prompt() string {
 		if err == nil {
 			input = string(b)
 		}
-		fmt.Fprint(p.Out, "\n")
+		fmt.Fprint(p.out, "\n")
 	} else {
 		scanner := bufio.NewScanner(os.Stdin)
 		ok := scanner.Scan()
@@ -59,7 +59,7 @@ func (p *Prompter) Prompt() string {
 		input = p.Default
 	}
 	if !p.inputIsValid(input) {
-		fmt.Fprintln(p.Out, p.errorMsg())
+		fmt.Fprintln(p.out, p.errorMsg())
 		return p.Prompt()
 	}
 	return input
